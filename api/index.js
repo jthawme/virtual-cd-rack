@@ -23,7 +23,7 @@ const ping = wrap((event, context, callback) => {
 const searchBarcode = wrap(async (event, context, callback) => {
   const body = JSON.parse(event.body);
 
-  const { valid, keys } = validateSchema(body, ["token", "barcode"]);
+  const { valid, keys } = validateSchema(body, ["token"]);
 
   if (!valid) {
     return {
@@ -35,7 +35,7 @@ const searchBarcode = wrap(async (event, context, callback) => {
     };
   }
 
-  const { token, barcode } = body;
+  const { token, barcode, album: albumSearch } = body;
 
   if (!(await verifyRecaptcha(token, retrieveUserSourceIp(event)))) {
     return {
@@ -52,9 +52,11 @@ const searchBarcode = wrap(async (event, context, callback) => {
     };
   }
 
-  const { count, releases } = await searchReleases(barcode);
+  const data = await searchReleases(barcode, albumSearch);
 
-  if (!count || count === 0) {
+  const releaseArr = data.releases || data["release-groups"];
+
+  if (!releaseArr || releaseArr.length === 0) {
     return {
       statusCode: 200,
       body: {
@@ -64,7 +66,7 @@ const searchBarcode = wrap(async (event, context, callback) => {
   }
 
   const album = prepareAlbum(
-    await getRelease(releases.find(item => item.status === "Official")?.id)
+    await getRelease(releaseArr.find(item => item.status === "Official").id)
   );
 
   return {

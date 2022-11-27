@@ -9,11 +9,23 @@
     </div>
 
     <form @submit.prevent="onSubmit">
+      <button class="mini" type="button" :disabled="busy" @click="onClear">
+        Clear
+      </button>
       <input
         v-model="currentBarcode"
         :disabled="busy"
-        type="text"
+        placeholder="Barcode"
+        type="search"
         name="barcode"
+      />
+
+      <input
+        v-model="currentAlbumSearch"
+        :disabled="busy"
+        type="text"
+        name="album"
+        placeholder="Album name"
       />
 
       <button :disabled="busy">Submit</button>
@@ -69,6 +81,7 @@ export default {
       scanDisabled: false,
       busy: false,
       currentAlbum: null,
+      currentAlbumSearch: "",
       messages: []
     };
   },
@@ -107,10 +120,13 @@ export default {
     onBarcode(barcode) {
       if (!this.busy && barcode !== this.currentBarcode) {
         this.currentBarcode = barcode;
+        this.currentAlbumSearch = "";
         this.addMessage("Barcode scanned");
       }
     },
-    async onSubmit() {
+    async onSubmit(e) {
+      const submitData = formToObject(e.target);
+
       this.busy = true;
       this.currentAlbum = null;
 
@@ -119,8 +135,8 @@ export default {
 
         const { album } = await this.$store.getters
           .search({
-            token,
-            barcode: this.currentBarcode
+            ...submitData,
+            token
           })
           .then(resp => resp.json());
 
@@ -158,12 +174,18 @@ export default {
           this.addMessage("Album added");
           this.currentAlbum = null;
           this.currentBarcode = "";
+          this.currentAlbumSearch = "";
         }
       } catch (e) {
         console.error(e);
       } finally {
         this.busy = false;
       }
+    },
+    onClear() {
+      this.currentAlbum = null;
+      this.currentBarcode = "";
+      this.currentAlbumSearch = "";
     }
   }
 };
@@ -193,7 +215,7 @@ form {
     padding: 10px;
   }
 
-  button {
+  button:not(.mini) {
     display: block;
 
     width: 100%;

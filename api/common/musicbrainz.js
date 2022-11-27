@@ -17,12 +17,16 @@ const mbApi = new MusicBrainzApi({
 
 const ca = new CA({ userAgent: configString });
 
-const searchReleases = async barcode => {
-  return mbApi.searchRelease({
-    query: {
-      barcode
-    }
-  });
+const searchReleases = async (barcode, albumName) => {
+  if (barcode) {
+    return mbApi.searchRelease({
+      query: {
+        barcode
+      }
+    });
+  }
+
+  return mbApi.searchRelease({ query: albumName });
 };
 
 const getReleaseArtwork = mbid => {
@@ -53,7 +57,7 @@ const prepareAlbum = album => {
     album.artwork.images.find(item => item.front) || album.artwork[0];
 
   return {
-    barcode: album.barcode,
+    barcode: album.barcode || `nobarcode-${album.id}`,
     title: [album.title, ...album["artist-credit"].map(item => item.name)].join(
       "-"
     ),
