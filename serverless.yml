@@ -47,6 +47,14 @@ functions:
           cors: true
     handler: api/index.addRelease
 
+  load:
+    events:
+      - http:
+          method: get
+          path: load
+          cors: true
+    handler: api/index.loadAlbums
+
   # scheduledEvents:
   #   events:
   #     - schedule: rate(1 minute)

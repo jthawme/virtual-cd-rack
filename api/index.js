@@ -1,6 +1,6 @@
 // const {} = require("./common");
 
-const { saveDbItem } = require("./common/db");
+const { saveDbItem, getDbItem, scanTable, TABLE } = require("./common/db");
 const {
   searchReleases,
   getRelease,
@@ -129,8 +129,20 @@ const addRelease = wrap(async (event, context, callback) => {
   };
 });
 
+const loadAlbums = wrap(async (event, context, callback) => {
+  const albums = await scanTable(TABLE.MAIN, true);
+
+  return {
+    statusCode: 200,
+    body: {
+      albums
+    }
+  };
+});
+
 module.exports = {
   ping,
   searchBarcode,
-  addRelease
+  addRelease,
+  loadAlbums
 };

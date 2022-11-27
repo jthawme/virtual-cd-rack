@@ -102,9 +102,8 @@ export default {
    ** Plugins to load before mounting the App
    */
   env: {
-    endpoint: process.env.LOCAL
-      ? "http://localhost:3001/dev"
-      : "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev",
+    endpoint: process.env.LOCAL ? "http://localhost:3001/dev" : "/api",
+    // : "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev",
     recaptcha: process.env.RECAPTCHA_KEY,
     PROJECT_DOMAIN: process.env.LOCAL ? "http://localhost:3000" : PROJECT_DOMAIN
   },
@@ -154,6 +153,14 @@ export default {
     manifest: {
       name: PROJECT_TITLE,
       short_name: PROJECT_SHORT_TITLE
-    }
+    },
+    runtimeCaching: [
+      {
+        urlPattern: "/api/load",
+        handler: "cacheFirst",
+        method: "GET",
+        strategyOptions: { cacheableResponse: { statuses: [0, 200] } }
+      }
+    ]
   }
 };

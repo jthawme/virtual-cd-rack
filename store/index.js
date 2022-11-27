@@ -32,6 +32,9 @@ export const getters = {
       method: "POST",
       body: JSON.stringify(data)
     });
+  },
+  load: (state, getters) => data => {
+    return fetch(getters.api("/load"));
   }
 };
 
