@@ -8,6 +8,35 @@
       />
     </div>
 
+    <form v-if="currentAlbums" @submit.prevent="onIdSubmit">
+      <label v-for="album in currentAlbums" :key="album.data.mbid">
+        <input
+          type="radio"
+          name="mbid"
+          :value="album.data.mbid"
+          :checked="currentAlbums.length === 1"
+        />
+
+        <div class="album-preview">
+          <div class="album-preview-artwork">
+            <img
+              v-if="album.data.artwork"
+              :src="album.data.artwork.thumbnails[250]"
+              alt=""
+            />
+          </div>
+          <span class="album-preview-title">{{ album.data.title }}</span>
+          <div class="album-preview-artists">
+            <span v-for="artist in album.data.artists" :key="artist.id">{{
+              artist.title
+            }}</span>
+          </div>
+        </div>
+      </label>
+
+      <button :disabled="busy">Submit</button>
+    </form>
+
     <form @submit.prevent="onSubmit">
       <button class="mini" type="button" :disabled="busy" @click="onClear">
         Clear
@@ -27,24 +56,6 @@
         name="album"
         placeholder="Album name"
       />
-
-      <button :disabled="busy">Submit</button>
-    </form>
-
-    <form v-if="currentAlbum" @submit.prevent="onIdSubmit">
-      <input type="hidden" name="mbid" :value="currentAlbum.data.mbid" />
-
-      <div class="album-preview">
-        <div class="album-preview-artwork">
-          <img :src="currentAlbum.data.artwork.thumbnails[250]" alt="" />
-        </div>
-        <span class="album-preview-title">{{ currentAlbum.data.title }}</span>
-        <div class="album-preview-artists">
-          <span v-for="artist in currentAlbum.data.artists" :key="artist.id">{{
-            artist.title
-          }}</span>
-        </div>
-      </div>
 
       <button :disabled="busy">Submit</button>
     </form>
@@ -80,7 +91,7 @@ export default {
       currentBarcode: "",
       scanDisabled: false,
       busy: false,
-      currentAlbum: null,
+      currentAlbums: null,
       currentAlbumSearch: "",
       messages: []
     };
@@ -128,25 +139,25 @@ export default {
       const submitData = formToObject(e.target);
 
       this.busy = true;
-      this.currentAlbum = null;
+      this.currentAlbums = null;
 
       try {
         const token = await this.getRecaptcha();
 
-        const { album } = await this.$store.getters
+        const { albums } = await this.$store.getters
           .search({
             ...submitData,
             token
           })
           .then(resp => resp.json());
 
-        if (!album) {
+        if (!albums) {
           this.addMessage("No album match", "error");
         } else {
           this.addMessage("Album found");
         }
 
-        this.currentAlbum = album;
+        this.currentAlbums = albums;
       } catch (e) {
         console.error(e);
       } finally {
@@ -172,7 +183,7 @@ export default {
           this.addMessage("Album not added", "error");
         } else {
           this.addMessage("Album added");
-          this.currentAlbum = null;
+          this.currentAlbums = null;
           this.currentBarcode = "";
           this.currentAlbumSearch = "";
         }
@@ -183,7 +194,7 @@ export default {
       }
     },
     onClear() {
-      this.currentAlbum = null;
+      this.currentAlbums = null;
       this.currentBarcode = "";
       this.currentAlbumSearch = "";
     }

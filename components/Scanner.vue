@@ -67,8 +67,15 @@ export default {
         name: item.label.split(" (").shift()
       }));
 
-    this.deviceIndex =
-      this.devices.findIndex(item => item.name.includes("back")) || 0;
+    this.deviceIndex = this.devices.findIndex(item =>
+      item.name.includes("back")
+    );
+
+    if (this.deviceIndex < 0) {
+      this.deviceIndex = 0;
+    }
+
+    console.log(this.deviceIndex);
 
     this.update();
   },

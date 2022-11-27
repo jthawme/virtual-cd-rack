@@ -33,7 +33,7 @@ const getReleaseArtwork = mbid => {
   return new Promise((resolve, reject) => {
     ca.release(mbid, (err, response) => {
       if (err) {
-        reject(err);
+        resolve(false);
         return;
       }
 
@@ -53,8 +53,9 @@ const getRelease = async mbid => {
 };
 
 const prepareAlbum = album => {
-  const artwork =
-    album.artwork.images.find(item => item.front) || album.artwork[0];
+  const artwork = album.artwork
+    ? album.artwork.images.find(item => item.front) || album.artwork[0]
+    : false;
 
   return {
     barcode: album.barcode || `nobarcode-${album.id}`,
@@ -70,11 +71,13 @@ const prepareAlbum = album => {
         id: item.artist.id
       })),
       mbid: album.id,
-      artwork: {
-        id: artwork.id,
-        src: artwork.image,
-        thumbnails: artwork.thumbnails
-      }
+      artwork: artwork
+        ? {
+            id: artwork.id,
+            src: artwork.image,
+            thumbnails: artwork.thumbnails
+          }
+        : false
     }
   };
 };

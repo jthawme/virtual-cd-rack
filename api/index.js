@@ -60,19 +60,24 @@ const searchBarcode = wrap(async (event, context, callback) => {
     return {
       statusCode: 200,
       body: {
-        album: false
+        albums: false
       }
     };
   }
 
-  const album = prepareAlbum(
-    await getRelease(releaseArr.find(item => item.status === "Official").id)
-  );
+  const albums = (
+    await Promise.all(
+      releaseArr
+        .filter(item => item.status === "Official")
+        .slice(0, 5)
+        .map(album => getRelease(album.id))
+    )
+  ).map(album => prepareAlbum(album));
 
   return {
     statusCode: 200,
     body: {
-      album
+      albums: albums.find(item => item.barcode === barcode) || albums
     }
   };
 });
