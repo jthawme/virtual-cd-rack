@@ -67,7 +67,8 @@ export default {
         name: item.label.split(" (").shift()
       }));
 
-    this.deviceIndex = 0;
+    this.deviceIndex =
+      this.devices.findIndex(item => item.name.includes("back")) || 0;
 
     this.update();
   },
