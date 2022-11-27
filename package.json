@@ -20,6 +20,10 @@
     "@nuxtjs/markdownit": "^2.0.0",
     "@nuxtjs/style-resources": "^1.2.1",
     "@nuxtjs/svg": "^0.3.0",
+    "coverart": "^0.0.1",
+    "email-validator": "^2.0.4",
+    "google-libphonenumber": "^3.2.31",
+    "musicbrainz-api": "^0.10.1",
     "node-fetch": "^2.6.1",
     "normalize.css": "^8.0.1",
     "nuxt": "^2.15.8",
@@ -30,7 +34,7 @@
     "smoothscroll-polyfill": "^0.4.4",
     "underscore": "^1.11.0",
     "v-scroll-lock": "^1.2.0",
-    "vue-resize-observer": "^1.0.37",
+    "vue-resize-observer": "^1.0.37"
   },
   "devDependencies": {
     "@nuxtjs/pwa": "^3.3.2",

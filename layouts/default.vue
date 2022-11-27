@@ -102,6 +102,11 @@ body {
   width: 1px;
 }
 
+.grecaptcha-badge {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .fade {
   opacity: 1;
 }

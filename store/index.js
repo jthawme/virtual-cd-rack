@@ -1,7 +1,7 @@
 export const state = () => {
   return {
     endpoint: "",
-    domain: "",
+    domain: ""
   };
 };
 
@@ -20,13 +20,19 @@ export const mutations = {
 export const getters = {
   api: state => path => {
     return `${state.endpoint}${path}`;
+  },
+  search: (state, getters) => data => {
+    return fetch(getters.api("/search"), {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  },
+  add: (state, getters) => data => {
+    return fetch(getters.api("/add"), {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
   }
-  // post: (state, getters) => data => {
-  //   return fetch(getters.api("/post"), {
-  //     method: "POST",
-  //     body: JSON.stringify(data)
-  //   });
-  // }
 };
 
 export const actions = {

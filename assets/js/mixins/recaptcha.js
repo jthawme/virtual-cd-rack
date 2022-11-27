@@ -6,7 +6,7 @@ export const CaptchaMixin = {
         grecaptcha.ready(() => {
           // eslint-disable-next-line no-undef
           grecaptcha
-            .execute("6Ld13VYeAAAAAGZnDW4OxIC2YFZ4KDrJ6c4bfXoV", {
+            .execute(process.env.recaptcha, {
               action: "submit"
             })
             .then(token => {

@@ -88,9 +88,6 @@ export default {
       { meta: "msapplication-TileColor", content: "#ffffff" },
       { meta: "msapplication-TileImage", content: "/ms-icon-144x144.png" },
       { meta: "theme-color", content: "#ffffff" }
-    ],
-    script: [
-      { src: "/js/snap.js" }
     ]
   },
   /*
@@ -105,10 +102,9 @@ export default {
    ** Plugins to load before mounting the App
    */
   env: {
-    GA_ID,
     endpoint: process.env.LOCAL
       ? "http://localhost:3001/dev"
-      : "https://amazonaws.com/dev",
+      : "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev",
     recaptcha: process.env.RECAPTCHA_KEY,
     PROJECT_DOMAIN: process.env.LOCAL ? "http://localhost:3000" : PROJECT_DOMAIN
   },
@@ -127,11 +123,7 @@ export default {
   /*
    ** Nuxt.js modules
    */
-  modules: [
-    "@nuxtjs/svg",
-    "@nuxtjs/style-resources",
-    "@nuxtjs/markdownit"
-  ],
+  modules: ["@nuxtjs/svg", "@nuxtjs/style-resources", "@nuxtjs/markdownit"],
 
   markdownit: {
     injected: true,
