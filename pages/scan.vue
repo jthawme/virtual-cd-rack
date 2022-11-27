@@ -157,6 +157,8 @@ export default {
           this.addMessage("Album found");
         }
 
+        console.log(albums);
+
         this.currentAlbums = albums;
       } catch (e) {
         console.error(e);

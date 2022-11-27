@@ -69,15 +69,17 @@ const searchBarcode = wrap(async (event, context, callback) => {
     await Promise.all(
       releaseArr
         .filter(item => item.status === "Official")
-        .slice(0, 5)
+        .slice(0, 12)
         .map(album => getRelease(album.id))
     )
   ).map(album => prepareAlbum(album));
 
+  const fullMatch = albums.find(item => item.barcode === barcode);
+
   return {
     statusCode: 200,
     body: {
-      albums: albums.find(item => item.barcode === barcode) || albums
+      albums: fullMatch ? [fullMatch] : albums
     }
   };
 });

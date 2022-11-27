@@ -99,6 +99,7 @@ package:
     - pages/**
     - dist/**
     - tools/**
+    - .nuxt/**
 
 custom:
   prune:
