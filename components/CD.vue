@@ -1,5 +1,10 @@
 <template>
-  <div class="cd-outer">
+  <div
+    class="cd-outer"
+    :style="
+      `--album-color: ${color.vibrant};--album-dark-color: ${color.dark};--album-light-color: ${color.light}`
+    "
+  >
     <div class="cd-inner">
       <div class="cd-blur" />
 
@@ -41,6 +46,14 @@ export default {
     title: {
       type: String,
       required: true
+    },
+    color: {
+      type: Object,
+      default: () => ({
+        vibrant: "red",
+        dark: "red",
+        light: "red"
+      })
     }
   },
   data() {
@@ -91,9 +104,7 @@ export default {
   position: relative;
 
   width: var(--spine-width);
-  height: 0;
-
-  padding-bottom: 1000%;
+  height: calc(var(--spine-width) * 10.2);
 
   perspective: 100px;
 
@@ -123,7 +134,7 @@ export default {
   top: 0;
   right: 0;
 
-  width: 1120%;
+  width: calc(var(--spine-width) * 11.2);
   height: 100%;
 
   display: grid;
@@ -180,7 +191,7 @@ export default {
   transform-origin: right;
   transform: rotateY(-65deg);
 
-  background-color: blue;
+  background-color: var(--album-dark-color);
 
   &-inner {
     position: relative;
@@ -204,7 +215,7 @@ export default {
   position: relative;
 
   transform-origin: left;
-  background-color: red;
+  background-color: var(--album-color);
 
   z-index: 3;
 

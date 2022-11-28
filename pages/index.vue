@@ -66,7 +66,7 @@ export default {
 .pool {
   display: grid;
 
-  grid-template-columns: repeat(auto-fill, minmax(var(--spine-width), 1fr));
+  grid-template-columns: 1fr;
 
   perspective: 400px;
 
@@ -74,6 +74,10 @@ export default {
 
   &-item {
     z-index: calc(var(--highest-index, 0) - var(--index));
+  }
+
+  @include tablet {
+    grid-template-columns: repeat(auto-fill, minmax(var(--spine-width), 1fr));
   }
 }
 </style>

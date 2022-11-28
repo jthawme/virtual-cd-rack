@@ -1,7 +1,5 @@
 const MusicBrainzApi = require("musicbrainz-api").MusicBrainzApi;
 const CA = require("coverart");
-const Vibrant = require("node-vibrant");
-const axios = require("axios");
 
 const config = {
   appName: "jt-virtual-cd-rack",
@@ -50,40 +48,13 @@ const extractImage = artwork => {
     : false;
 };
 
-const getColor = async artwork => {
-  if (!artwork || !artwork.image) {
-    return false;
-  }
-
-  const arrBuffer = await axios({
-    method: "get",
-    url: artwork.image,
-    responseType: "arraybuffer"
-  }).then(function({ data: imageBuffer }) {
-    return imageBuffer;
-  });
-
-  const palette = await Vibrant.from(arrBuffer).getPalette();
-
-  return {
-    vibrant: palette.Vibrant.hex,
-    dark: palette.DarkVibrant.hex,
-    light: palette.LightVibrant.hex,
-    muted: palette.Muted.hex,
-    darkMuted: palette.DarkMuted.hex,
-    lightMuted: palette.LightMuted.hex
-  };
-};
-
 const getRelease = async mbid => {
   const album = await mbApi.lookupRelease(mbid, ["artists"]);
   const coverArt = await getReleaseArtwork(mbid);
-  const color = await getColor(extractImage(coverArt));
 
   return {
     ...album,
-    artwork: coverArt,
-    color
+    artwork: coverArt
   };
 };
 
@@ -97,7 +68,7 @@ const getSortVersion = artistName => {
   return lower;
 };
 
-const prepareAlbum = album => {
+const prepareAlbum = (album, additionalData = {}) => {
   const artwork = extractImage(album.artwork);
 
   return {
@@ -115,14 +86,14 @@ const prepareAlbum = album => {
         id: item.artist.id
       })),
       mbid: album.id,
-      color: album.color,
       artwork: artwork
         ? {
             id: artwork.id,
             src: artwork.image,
             thumbnails: artwork.thumbnails
           }
-        : false
+        : false,
+      ...additionalData
     }
   };
 };

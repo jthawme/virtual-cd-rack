@@ -80,6 +80,8 @@
 </template>
 
 <script>
+import Vibrant from "node-vibrant";
+
 import { CaptchaMixin } from "~/assets/js/mixins/recaptcha";
 import { formToObject } from "~/assets/js/utils";
 import Scanner from "~/components/Scanner.vue";
@@ -162,7 +164,7 @@ export default {
           this.addMessage("Album found");
         }
 
-        console.log(albums);
+        this.getColors(albums);
 
         this.currentAlbums = albums;
       } catch (e) {
@@ -182,7 +184,10 @@ export default {
         const { success } = await this.$store.getters
           .add({
             token,
-            mbid: data.mbid
+            mbid: data.mbid,
+            color: this.currentAlbums.find(
+              album => album.data.mbid === data.mbid
+            ).data.color
           })
           .then(resp => resp.json());
 
@@ -199,6 +204,35 @@ export default {
       } finally {
         this.busy = false;
       }
+    },
+    async getColors(albums) {
+      const colors = await Promise.all(
+        albums.map(album => {
+          if (!album.data.artwork) {
+            return Promise.resolve(false);
+          }
+
+          return Vibrant.from(
+            this.getThumbnail(album.data.artwork.thumbnails)
+          ).getPalette();
+        })
+      );
+
+      this.currentAlbums = this.currentAlbums.map((album, idx) => {
+        return {
+          ...album,
+          data: {
+            ...album.data,
+            color: colors[idx]
+              ? {
+                  vibrant: colors[idx].Vibrant.hex,
+                  light: colors[idx].LightVibrant.hex,
+                  dark: colors[idx].DarkVibrant.hex
+                }
+              : false
+          }
+        };
+      });
     },
     onClear() {
       this.currentAlbums = null;

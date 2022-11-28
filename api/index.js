@@ -100,7 +100,7 @@ const addRelease = wrap(async (event, context, callback) => {
     };
   }
 
-  const { token, mbid } = body;
+  const { token, mbid, color = false } = body;
 
   if (!(await verifyRecaptcha(token, retrieveUserSourceIp(event)))) {
     return {
@@ -117,7 +117,10 @@ const addRelease = wrap(async (event, context, callback) => {
     };
   }
 
-  const album = prepareAlbum(await getRelease(mbid));
+  const release = await getRelease(mbid);
+  const album = prepareAlbum(release, {
+    color
+  });
 
   await saveDbItem(album);
 
