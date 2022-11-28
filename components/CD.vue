@@ -1,16 +1,19 @@
 <template>
-  <div
-    class="cd-outer"
-    :style="
-      `--album-color: ${color.vibrant};--album-dark-color: ${color.dark};--album-light-color: ${color.light}`
-    "
-  >
+  <div class="cd-outer" :style="colorString" @mouseenter="onMouseEnter">
     <div class="cd-inner">
       <div class="cd-blur" />
 
       <div class="cd-front">
-        <div class="cd-front-inner">
-          <img v-if="image" :src="image" alt="" />
+        <div class="cd-front-inner" :class="{ show: loaded }">
+          <img
+            v-if="image && interacted"
+            :src="image"
+            alt=""
+            @load="loaded = true"
+          />
+          <div v-else class="cd-front-fallback">
+            {{ title }}
+          </div>
         </div>
       </div>
       <div class="cd-spine">
@@ -48,7 +51,7 @@ export default {
       required: true
     },
     color: {
-      type: Object,
+      type: [Object, Boolean],
       default: () => ({
         vibrant: "red",
         dark: "red",
@@ -59,10 +62,21 @@ export default {
   data() {
     return {
       artworkLoaded: false,
+      loaded: false,
       interacted: false
     };
   },
   computed: {
+    colorString() {
+      return [
+        ["--album-color", this.color.vibrant],
+        ["--album-dark-color", this.color.dark],
+        ["--album-light-color", this.color.light]
+      ]
+        .filter(item => !!item[1])
+        .map(item => item.join(":"))
+        .join(";");
+    },
     image() {
       if (!this.artwork) {
         return false;
@@ -87,6 +101,13 @@ export default {
             this.artworkLoaded = true;
           });
         }
+      }
+    }
+  },
+  methods: {
+    onMouseEnter() {
+      if (!this.interacted) {
+        this.interacted = true;
       }
     }
   }
@@ -123,7 +144,7 @@ export default {
     }
 
     .cd-front {
-      transform: rotateY(-5deg);
+      transform: rotateY(-2deg);
     }
   }
 }
@@ -207,6 +228,19 @@ export default {
 
       width: 100%;
       height: 100%;
+      opacity: 0;
+
+      transition: {
+        duration: 0.5s;
+        delay: 0.5s;
+        property: opacity;
+      }
+    }
+
+    &.show {
+      img {
+        opacity: 1;
+      }
     }
   }
 }
@@ -215,7 +249,7 @@ export default {
   position: relative;
 
   transform-origin: left;
-  background-color: var(--album-color);
+  background-color: var(--album-color, #e5e5e5);
 
   z-index: 3;
 
@@ -262,5 +296,31 @@ export default {
   &-title {
     text-align: right;
   }
+}
+
+.cd-front-fallback {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.5em;
+
+  padding: 1em;
+
+  background-color: var(--album-dark-color, #ccc);
+
+  line-height: 1.2;
+  text-align: center;
+
+  font-weight: bold;
 }
 </style>

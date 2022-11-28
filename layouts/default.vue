@@ -30,7 +30,7 @@ export default {
   --color-black: #000;
 
   --color-text: var(--color-black);
-  --color-bg: var(--color-white);
+  --color-bg: rgb(253, 43, 43);
 
   --font-size-x-small: 10px;
   --font-size-small: 12px;
