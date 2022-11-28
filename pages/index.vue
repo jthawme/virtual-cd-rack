@@ -1,35 +1,62 @@
 <template>
   <div class="content">
-    <div class="search">
-      <input
-        v-model="currentFilter"
-        type="search"
-        placeholder="Artist, album"
-      />
-    </div>
     <div v-resize="onResize" class="pool">
       <CD
         v-for="album in filteredAlbums"
         :key="album.barcode"
         class="pool-item"
+        :class="{ 'pool-item-highlighted': album.data.mbid === highlight }"
         v-bind="album.data"
+        :highlight="album.data.mbid === highlight"
       />
     </div>
+
+    <aside>
+      <div class="top">
+        <div class="info">
+          <p>
+            This CD rack is digital, but it perfectly mirrors one that is not
+            digital: my CD rack.
+          </p>
+          <p>
+            Please, take a look and be amazed.
+          </p>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="search">
+          <span class="title">Search</span>
+          <input
+            v-model="currentFilter"
+            type="search"
+            placeholder="Artist, album"
+          />
+        </div>
+
+        <div class="group">
+          <span class="title">Random selection</span>
+          <button @click="onRandom">Random</button>
+          <button @click="highlight = null">Clear</button>
+        </div>
+      </div>
+    </aside>
   </div>
 </template>
 
 <script>
 import { search } from "fast-fuzzy";
 
-import { onWindowResize, tickUpdate } from "~/assets/js/utils";
 import CD from "~/components/CD.vue";
+import { randomArr, randomBetween } from "~/assets/js/utils";
 export default {
   components: { CD },
   data() {
     return {
       loading: true,
       currentFilter: "",
-      albums: []
+      albums: [],
+      highlight: null
     };
   },
   computed: {
@@ -52,6 +79,13 @@ export default {
       }
 
       return this.albums;
+    }
+  },
+  watch: {
+    filteredAlbums() {
+      requestAnimationFrame(() => {
+        this.assignIndex();
+      });
     }
   },
   mounted() {
@@ -92,12 +126,30 @@ export default {
     },
     onResize() {
       this.assignIndex();
+    },
+    onRandom() {
+      this.highlight = randomArr(this.filteredAlbums).data.mbid;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.$el.querySelector(".pool-item-highlighted").scrollIntoView({
+            behavior: "smooth"
+          });
+        });
+      });
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
+.content {
+  display: grid;
+
+  grid-template-columns: calc(100% - (var(--spine-width) * 10)) 1fr;
+  align-items: flex-start;
+}
+
 .pool {
   position: relative;
 
@@ -107,10 +159,7 @@ export default {
 
   perspective: 400px;
 
-  width: calc(100% - (var(--spine-width) * 11));
-  margin-left: var(--spine-width);
-
-  padding-bottom: 50px;
+  z-index: 2;
 
   &:before {
     position: absolute;
@@ -140,7 +189,7 @@ export default {
 .search {
   position: relative;
 
-  z-index: 10000;
+  z-index: 1;
 
   background-color: var(--color-bg);
 
@@ -156,7 +205,7 @@ export default {
 
     width: 100%;
 
-    font-size: 4vw;
+    font-size: inherit;
 
     outline: none;
 
@@ -167,6 +216,59 @@ export default {
     &::placeholder {
       color: #e5e5e5;
     }
+  }
+}
+
+aside {
+  position: sticky;
+
+  top: 0;
+
+  height: 100vh;
+
+  color: white;
+
+  display: flex;
+
+  flex-direction: column;
+  justify-content: space-between;
+
+  .info {
+    padding: 10px;
+
+    p {
+      font-weight: 500;
+    }
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 10px;
+
+    margin: 10px;
+  }
+}
+
+.group {
+  margin: 10px;
+
+  .title {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  button {
+    display: block;
+
+    border: none;
+
+    background-color: rgba(0, 0, 0, 0.25);
+    color: white;
+
+    cursor: pointer;
+
+    padding: 5px 10px;
+    margin: 10px 0;
   }
 }
 </style>

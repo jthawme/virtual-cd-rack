@@ -171,6 +171,10 @@ export const randomBetween = (min, max) => {
   return Math.random() * (max - min) + min;
 };
 
+export const randomArr = arr => {
+  return arr[Math.floor(Math.random() * arr.length)];
+};
+
 export const shuffle = array => {
   let currentIndex = array.length,
     randomIndex;

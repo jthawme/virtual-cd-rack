@@ -1,5 +1,10 @@
 <template>
-  <div class="cd-outer" :style="colorString" @mouseenter="onMouseEnter">
+  <div
+    class="cd-outer"
+    :style="colorString"
+    :class="{ highlight }"
+    @mouseenter="onMouseEnter"
+  >
     <div class="cd-inner">
       <div class="cd-blur" />
 
@@ -57,6 +62,10 @@ export default {
         dark: "red",
         light: "red"
       })
+    },
+    highlight: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -102,6 +111,11 @@ export default {
           });
         }
       }
+    },
+    highlight(val) {
+      if (val) {
+        this.onMouseEnter();
+      }
     }
   },
   methods: {
@@ -128,6 +142,24 @@ export default {
   height: calc(var(--spine-width) * 10.2);
 
   perspective: 100px;
+
+  &.highlight {
+    .cd-inner {
+      transform: translate3d(calc(25% - var(--spine-width)), 0, 0);
+    }
+
+    .cd-blur {
+      opacity: 1;
+    }
+
+    .cd-spine {
+      transform: rotateY(30deg);
+    }
+
+    .cd-front {
+      transform: rotateY(-16.25deg);
+    }
+  }
 
   &:hover,
   &:focus-visible {
