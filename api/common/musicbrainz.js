@@ -17,7 +17,7 @@ const mbApi = new MusicBrainzApi({
 
 const ca = new CA({ userAgent: configString });
 
-const searchReleases = async (barcode, albumName) => {
+const searchReleases = async (barcode, albumName, artistSearch) => {
   if (barcode) {
     return mbApi.searchRelease({
       query: {
@@ -26,7 +26,17 @@ const searchReleases = async (barcode, albumName) => {
     });
   }
 
-  return mbApi.searchRelease({ query: albumName });
+  if (albumName) {
+    return mbApi.searchRelease({ query: albumName, limit: 100 });
+  }
+
+  const { artists } = await mbApi.searchArtist({ query: artistSearch });
+
+  return mbApi.lookupArtist(artists[0].id, [
+    "releases",
+    "release-groups",
+    "media"
+  ]);
 };
 
 const getReleaseArtwork = mbid => {

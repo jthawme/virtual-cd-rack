@@ -35,7 +35,7 @@ const searchBarcode = wrap(async (event, context, callback) => {
     };
   }
 
-  const { token, barcode, album: albumSearch } = body;
+  const { token, barcode, album: albumSearch, artist: artistSearch } = body;
 
   if (!(await verifyRecaptcha(token, retrieveUserSourceIp(event)))) {
     return {
@@ -52,7 +52,7 @@ const searchBarcode = wrap(async (event, context, callback) => {
     };
   }
 
-  const data = await searchReleases(barcode, albumSearch);
+  const data = await searchReleases(barcode, albumSearch, artistSearch);
 
   const releaseArr = data.releases || data["release-groups"];
 
@@ -68,9 +68,13 @@ const searchBarcode = wrap(async (event, context, callback) => {
   const albums = (
     await Promise.all(
       releaseArr
-        .filter(item => item.status === "Official")
-        .filter(item => item.media.some(mediaItem => mediaItem.format === "CD"))
-        .slice(0, 12)
+        .filter((item, index, arr) => {
+          return (
+            // item.status === "Official" &&
+            index === arr.findIndex(subItem => subItem.title === item.title)
+          );
+        })
+        // .slice(0, 12)
         .map(album => getRelease(album.id))
     )
   ).map(album => prepareAlbum(album));

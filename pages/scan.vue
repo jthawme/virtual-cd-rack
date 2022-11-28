@@ -62,6 +62,14 @@
         placeholder="Album name"
       />
 
+      <input
+        v-model="currentArtistSearch"
+        :disabled="busy"
+        type="text"
+        name="artist"
+        placeholder="Artist name"
+      />
+
       <button :disabled="busy">Submit</button>
     </form>
 
@@ -100,6 +108,7 @@ export default {
       busy: false,
       currentAlbums: null,
       currentAlbumSearch: "",
+      currentArtistSearch: "",
       messages: []
     };
   },
@@ -139,6 +148,7 @@ export default {
       if (!this.busy && barcode !== this.currentBarcode) {
         this.currentBarcode = barcode;
         this.currentAlbumSearch = "";
+        this.currentArtistSearch = "";
         this.addMessage("Barcode scanned");
       }
     },
@@ -158,15 +168,14 @@ export default {
           })
           .then(resp => resp.json());
 
-        if (!albums) {
+        if (!albums || albums.length === 0) {
           this.addMessage("No album match", "error");
         } else {
           this.addMessage("Album found");
+          this.getColors(albums);
+
+          this.currentAlbums = albums;
         }
-
-        this.getColors(albums);
-
-        this.currentAlbums = albums;
       } catch (e) {
         console.error(e);
       } finally {
@@ -195,9 +204,7 @@ export default {
           this.addMessage("Album not added", "error");
         } else {
           this.addMessage("Album added");
-          this.currentAlbums = null;
-          this.currentBarcode = "";
-          this.currentAlbumSearch = "";
+          this.onClear();
         }
       } catch (e) {
         console.error(e);
@@ -238,6 +245,7 @@ export default {
       this.currentAlbums = null;
       this.currentBarcode = "";
       this.currentAlbumSearch = "";
+      this.currentArtistSearch = "";
     },
     getThumbnail(thumbnails) {
       return Object.values(thumbnails).shift();
