@@ -17,11 +17,16 @@
           :checked="currentAlbums.length === 1"
         />
 
-        <div class="album-preview">
+        <div
+          class="album-preview"
+          :style="
+            `--album-color: ${album.data.color ? album.data.color.vibrant : ''}`
+          "
+        >
           <div class="album-preview-artwork">
             <img
               v-if="album.data.artwork"
-              :src="album.data.artwork.thumbnails[250]"
+              :src="getThumbnail(album.data.artwork.thumbnails)"
               alt=""
             />
           </div>
@@ -199,6 +204,9 @@ export default {
       this.currentAlbums = null;
       this.currentBarcode = "";
       this.currentAlbumSearch = "";
+    },
+    getThumbnail(thumbnails) {
+      return Object.values(thumbnails).shift();
     }
   }
 };
@@ -240,7 +248,7 @@ form {
 .album-preview {
   display: grid;
 
-  background-color: #f00;
+  background-color: var(--album-color, #f00);
   padding: 5px;
 
   grid-template-areas:

@@ -69,6 +69,7 @@ const searchBarcode = wrap(async (event, context, callback) => {
     await Promise.all(
       releaseArr
         .filter(item => item.status === "Official")
+        .filter(item => item.media.some(mediaItem => mediaItem.format === "CD"))
         .slice(0, 12)
         .map(album => getRelease(album.id))
     )

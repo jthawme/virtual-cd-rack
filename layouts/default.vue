@@ -41,7 +41,8 @@ export default {
   --font-size-xx-large: 46px;
   --font-size-xxx-large: 56px;
 
-  --font-family-body: sans-serif;
+  --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   --font-family-headline: sans-serif;
 
   --font-weight-normal: 400;
