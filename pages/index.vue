@@ -69,7 +69,6 @@ export default {
 
         const artists = search(this.currentFilter, this.albums, {
           keySelector: obj => {
-            console.log(obj.data.artists.map(artist => artist.title).join(" "));
             return obj.data.artists.map(artist => artist.title).join(" ");
           },
           threshold: 0.9

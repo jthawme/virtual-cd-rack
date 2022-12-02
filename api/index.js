@@ -1,4 +1,4 @@
-// const {} = require("./common");
+const { search, fuzzy } = require("fast-fuzzy");
 
 const { saveDbItem, getDbItem, scanTable, TABLE } = require("./common/db");
 const {
@@ -54,7 +54,34 @@ const searchBarcode = wrap(async (event, context, callback) => {
 
   const data = await searchReleases(barcode, albumSearch, artistSearch);
 
-  const releaseArr = data.releases || data["release-groups"];
+  const filterReleases = arr => {
+    if (barcode) {
+      return arr;
+    }
+
+    if (albumSearch) {
+      const filtered = arr.filter(item => {
+        if (!artistSearch) {
+          return true;
+        }
+
+        return item["artist-credit"].some(item => {
+          return fuzzy(item.artist.name, artistSearch) > 0.75;
+        });
+      });
+
+      return search(albumSearch, filtered, {
+        keySelector: obj => {
+          return obj.title;
+        },
+        threshold: 0.8
+      });
+    }
+
+    return arr;
+  };
+
+  const releaseArr = filterReleases(data.releases || data["release-groups"]);
 
   if (!releaseArr || releaseArr.length === 0) {
     return {
@@ -74,7 +101,8 @@ const searchBarcode = wrap(async (event, context, callback) => {
             index === arr.findIndex(subItem => subItem.title === item.title)
           );
         })
-        // .slice(0, 12)
+        .slice()
+        .slice(0, 6)
         .map(album => getRelease(album.id))
     )
   ).map(album => prepareAlbum(album));

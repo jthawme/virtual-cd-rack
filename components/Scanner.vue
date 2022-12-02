@@ -75,8 +75,6 @@ export default {
       this.deviceIndex = 0;
     }
 
-    console.log(this.deviceIndex);
-
     this.update();
   },
   beforeDestroy() {

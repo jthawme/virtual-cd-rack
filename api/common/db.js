@@ -208,7 +208,7 @@ const scanTable = (TableName = TABLE.MAIN, silent = true) => {
         .promise()
         .then(data => {
           items.push(...data.Items);
-          if (silent) {
+          if (!silent) {
             console.log(`Total records currently: ${items.length}`);
           }
 

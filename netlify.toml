@@ -1,9 +1,9 @@
-[[redirects]]
-  from = "/api/*"
-  to = "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev/:splat"
-  status = 200
-
 # [[redirects]]
 #   from = "/api/*"
-#   to = "http://localhost:3001/dev/:splat"
+#   to = "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev/:splat"
 #   status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "http://localhost:3001/dev/:splat"
+  status = 200

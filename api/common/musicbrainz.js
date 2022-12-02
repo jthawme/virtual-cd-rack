@@ -27,7 +27,7 @@ const searchReleases = async (barcode, albumName, artistSearch) => {
   }
 
   if (albumName) {
-    return mbApi.searchRelease({ query: albumName, limit: 100 });
+    return mbApi.searchRelease({ query: albumName, inc: ["artists"] });
   }
 
   const { artists } = await mbApi.searchArtist({ query: artistSearch });
