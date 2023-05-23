@@ -12,7 +12,7 @@
 
     <div class="info">
       <div class="trim">
-        <span>({{ date }}) {{ title }}</span>
+        <span>{{ title }}</span>
       </div>
       <div class="trim">
         <span>{{ artistsString }}</span>
