@@ -91,10 +91,27 @@
 import Vibrant from "node-vibrant";
 
 import { CaptchaMixin } from "~/assets/js/mixins/recaptcha";
-import { formToObject } from "~/assets/js/utils";
+import { formToObject, loadImage } from "~/assets/js/utils";
 import Scanner from "~/components/Scanner.vue";
 
 let messageId = 0;
+
+const smallImage = async (src, size = 10) => {
+  const img = await loadImage(src, true);
+
+  const width = size;
+  const height = (size / img.width) * img.height;
+
+  // const canvas = new OffscreenCanvas(width, height);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return canvas.toDataURL("image/jpeg", 1);
+};
 
 export default {
   components: { Scanner },
@@ -172,9 +189,15 @@ export default {
           this.addMessage("No album match", "error");
         } else {
           this.addMessage("Album found");
-          this.getColors(albums);
 
-          this.currentAlbums = albums;
+          let _albums = albums.slice();
+
+          _albums = await this.getColors(_albums);
+          _albums = await this.getArtworks(_albums);
+
+          console.log(_albums);
+
+          this.currentAlbums = _albums;
         }
       } catch (e) {
         console.error(e);
@@ -196,7 +219,10 @@ export default {
             mbid: data.mbid,
             color: this.currentAlbums.find(
               album => album.data.mbid === data.mbid
-            ).data.color
+            ).data.color,
+            images: this.currentAlbums.find(
+              album => album.data.mbid === data.mbid
+            ).data.images
           })
           .then(resp => resp.json());
 
@@ -225,7 +251,7 @@ export default {
         })
       );
 
-      this.currentAlbums = this.currentAlbums.map((album, idx) => {
+      return albums.map((album, idx) => {
         return {
           ...album,
           data: {
@@ -235,6 +261,32 @@ export default {
                   vibrant: colors[idx].Vibrant.hex,
                   light: colors[idx].LightVibrant.hex,
                   dark: colors[idx].DarkVibrant.hex
+                }
+              : false
+          }
+        };
+      });
+    },
+    async getArtworks(albums) {
+      const small = await Promise.all(
+        albums.map(album => {
+          if (!album.data.artwork) {
+            return Promise.resolve(false);
+          }
+
+          return smallImage(this.getThumbnail(album.data.artwork.thumbnails));
+        })
+      );
+
+      return albums.map((album, idx) => {
+        return {
+          ...album,
+          data: {
+            ...album.data,
+            images: small[idx]
+              ? {
+                  small: small[idx],
+                  large: this.getThumbnail(album.data.artwork.thumbnails)
                 }
               : false
           }

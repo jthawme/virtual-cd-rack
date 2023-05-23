@@ -102,7 +102,9 @@ export default {
    ** Plugins to load before mounting the App
    */
   env: {
-    endpoint: process.env.LOCAL ? "http://localhost:3001/dev" : "/api",
+    endpoint: process.env.LOCAL
+      ? "http://localhost:3001/dev"
+      : "https://cds.jthaw.club/api",
     // : "https://w1wvlmkww4.execute-api.us-east-1.amazonaws.com/dev",
     recaptcha: process.env.RECAPTCHA_KEY,
     PROJECT_DOMAIN: process.env.LOCAL ? "http://localhost:3000" : PROJECT_DOMAIN

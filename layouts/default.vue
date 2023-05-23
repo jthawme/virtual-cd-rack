@@ -27,10 +27,10 @@ export default {
 
 :root {
   --color-white: #fff;
-  --color-black: #000;
+  --color-black: #111;
 
   --color-text: var(--color-black);
-  --color-bg: rgb(253, 43, 43);
+  --color-bg: #e5e5e5;
 
   --font-size-x-small: 10px;
   --font-size-small: 12px;

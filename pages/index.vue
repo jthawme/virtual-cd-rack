@@ -1,18 +1,24 @@
 <template>
   <div class="content">
-    <div v-resize="onResize" class="pool">
-      <CD
-        v-for="album in filteredAlbums"
-        :key="album.barcode"
-        class="pool-item"
-        :class="{ 'pool-item-highlighted': album.data.mbid === highlight }"
-        v-bind="album.data"
-        :highlight="album.data.mbid === highlight"
-      />
-    </div>
-
+    <header>
+      <h1>CD RACK</h1>
+    </header>
     <aside>
-      <div class="top">
+      <div class="left">
+        <span v-if="currentAlbum" class="title">{{
+          todayActive === currentAlbum.data.mbid ? "Today" : "Highlight"
+        }}</span>
+        <div
+          v-if="currentAlbum"
+          :key="currentAlbum.data.mbid"
+          class="current"
+          :style="`--size: 30`"
+        >
+          <CDHighlight v-bind="currentAlbum.data" />
+        </div>
+      </div>
+
+      <div class="right">
         <div class="info">
           <p>
             This CD rack is digital, but it perfectly mirrors one that is not
@@ -22,9 +28,7 @@
             Please, take a look and be amazed.
           </p>
         </div>
-      </div>
 
-      <div class="bottom">
         <div class="search">
           <span class="title">Search</span>
           <input
@@ -41,25 +45,105 @@
         </div>
       </div>
     </aside>
+
+    <div
+      ref="canvas"
+      v-resize="onResize"
+      class="pool"
+      :style="
+        `--tile-size: ${tileInfo.size};  --highlight-size: ${highlightSize}`
+      "
+      @click="onActiveClick"
+    >
+      <CDDisplay
+        :width="width"
+        :cds="filteredAlbums"
+        @index="onIndex"
+        @info="onTileInfo"
+      />
+
+      <div
+        v-if="highlightedAlbum"
+        class="highlight"
+        :class="{
+          right: highlightPosition.right,
+          bottom: highlightPosition.bottom
+        }"
+        :style="
+          `--x:${highlightPosition.x}; --y:${highlightPosition.y};--size:${highlightPosition.size};`
+        "
+      >
+        <CDHighlight
+          :key="highlightedAlbum.data.mbid"
+          v-bind="highlightedAlbum.data"
+          class="highlight-inner"
+        />
+      </div>
+
+      <!-- <CD
+        v-for="album in filteredAlbums"
+        :key="album.barcode"
+        class="pool-item"
+        :class="{ 'pool-item-highlighted': album.data.mbid === highlight }"
+        v-bind="album.data"
+        :highlight="album.data.mbid === highlight"
+      /> -->
+    </div>
   </div>
 </template>
 
 <script>
+import seedrandom from "seedrandom";
 import { search } from "fast-fuzzy";
 
-import CD from "~/components/CD.vue";
-import { randomArr, randomBetween } from "~/assets/js/utils";
+import CDDisplay from "~/components/CDDisplay.vue";
+import { randomArr } from "~/assets/js/utils";
+import CDHighlight from "~/components/CDHighlight.vue";
+
+const dateStr = () => {
+  const d = new Date();
+  return [d.getFullYear(), d.getMonth(), d.getDate()].join("-");
+};
+
 export default {
-  components: { CD },
+  components: { CDDisplay, CDHighlight },
+  async fetch() {
+    const { albums } = await this.$store.getters
+      .load()
+      .then(resp => resp.json());
+
+    albums.sort((a, b) =>
+      (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
+    );
+
+    this.$store.commit("setAlbums", albums);
+  },
   data() {
     return {
-      loading: true,
+      width: -1,
+
       currentFilter: "",
-      albums: [],
-      highlight: null
+      highlight: null,
+      active: null,
+      todayActive: null,
+
+      highlightSize: 5,
+
+      tileInfo: {
+        size: -1,
+        perRow: 0
+      }
     };
   },
   computed: {
+    currentAlbum() {
+      return (
+        this.active && this.albums.find(item => item.data.mbid === this.active)
+      );
+    },
+    albums() {
+      return this.$store.state.albums;
+    },
     filteredAlbums() {
       if (this.currentFilter) {
         const albums = search(this.currentFilter, this.albums, {
@@ -78,64 +162,65 @@ export default {
       }
 
       return this.albums;
-    }
-  },
-  watch: {
-    filteredAlbums() {
-      requestAnimationFrame(() => {
-        this.assignIndex();
-      });
+    },
+
+    highlightPosition() {
+      if (typeof this.highlight !== "number") {
+        return null;
+      }
+
+      const row = Math.floor(this.highlight / this.tileInfo.perRow);
+      const col = this.highlight % this.tileInfo.perRow;
+
+      return {
+        x: this.tileInfo.size * col,
+        y: this.tileInfo.size * row,
+        size: this.tileInfo.size,
+        right: col + this.highlightSize > this.tileInfo.perRow,
+        bottom:
+          row + (this.highlightSize + 2) >
+          Math.ceil(this.filteredAlbums.length / this.tileInfo.perRow)
+      };
+    },
+
+    highlightedAlbum() {
+      return this.filteredAlbums[this.highlight] || null;
     }
   },
   mounted() {
-    this.loadData();
+    this.width = this.$refs.canvas.clientWidth;
 
-    // onWindowResize(tickUpdate(this.assignIndex.bind(this)));
+    const rng = seedrandom(dateStr());
+    this.highlight = Math.floor(this.albums.length * rng());
+    this.onActiveClick();
+    this.todayActive = this.active;
   },
   methods: {
-    async loadData() {
-      const { albums } = await this.$store.getters
-        .load()
-        .then(resp => resp.json());
-
-      albums.sort((a, b) =>
-        (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
-      );
-
-      this.albums = albums;
-
-      this.loading = false;
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.assignIndex();
-        });
-      });
-    },
-    assignIndex() {
-      const items = [...this.$el.querySelectorAll(".pool-item")];
-      const total = [];
-
-      items.forEach(item => {
-        item.style.setProperty("--index", item.offsetLeft);
-        total.push(item.offsetLeft);
-      });
-
-      this.$el.style.setProperty("--highest-index", Math.max(...total));
-    },
-    onResize() {
-      this.assignIndex();
+    onResize({ width }) {
+      this.width = width;
     },
     onRandom() {
-      this.highlight = randomArr(this.filteredAlbums).data.mbid;
+      const mbid = randomArr(this.filteredAlbums).data.mbid;
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.$el.querySelector(".pool-item-highlighted").scrollIntoView({
-            behavior: "smooth"
-          });
-        });
-      });
+      this.highlight = this.filteredAlbums.findIndex(
+        item => item.data.mbid === mbid
+      );
+
+      this.onActiveClick();
+    },
+    onIndex(index) {
+      this.highlight =
+        index >= 0 && index < this.filteredAlbums.length ? index : null;
+    },
+    onTileInfo(info) {
+      this.tileInfo = { ...info };
+    },
+    onActiveClick() {
+      if (!this.highlight) {
+        return;
+      }
+
+      this.active = this.filteredAlbums[this.highlight].data.mbid;
     }
   }
 };
@@ -143,46 +228,31 @@ export default {
 
 <style lang="scss" scoped>
 .content {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
-  grid-template-columns: calc(100% - (var(--spine-width) * 10)) 1fr;
-  align-items: flex-start;
+  padding: 1rem;
+}
+
+header {
+  h1 {
+    color: #111;
+
+    font-size: calc(24vw - 1rem);
+    text-align: center;
+
+    line-height: 1;
+    margin: -0.6em 0 0;
+
+    opacity: 0.25;
+  }
 }
 
 .pool {
   position: relative;
 
-  display: grid;
-
-  grid-template-columns: 1fr;
-
-  perspective: 400px;
-
-  z-index: 2;
-
-  &:before {
-    position: absolute;
-
-    top: 0;
-    right: 100%;
-
-    width: var(--spine-width);
-    height: 100%;
-
-    content: "";
-
-    background-color: var(--color-bg);
-
-    z-index: 10000;
-  }
-
-  &-item {
-    z-index: calc(var(--highest-index, 0) - var(--index));
-  }
-
-  @include tablet {
-    grid-template-columns: repeat(auto-fill, minmax(var(--spine-width), 1fr));
-  }
+  min-height: calc((var(--tile-size) * (var(--highlight-size) + 2)) * 1px);
 }
 
 .search {
@@ -208,7 +278,7 @@ export default {
 
     outline: none;
 
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.25);
 
     color: white;
 
@@ -219,22 +289,25 @@ export default {
 }
 
 aside {
-  position: sticky;
+  display: grid;
 
-  top: 0;
+  grid-template-columns: 1fr;
 
-  height: 100vh;
+  gap: 1rem;
 
-  color: white;
+  color: #111;
 
-  display: flex;
+  @include large-mobile {
+    grid-template-columns: minmax(auto, 200px) 1fr auto;
+  }
 
-  flex-direction: column;
-  justify-content: space-between;
+  .right {
+    @include large-mobile {
+      grid-column: 3;
+    }
+  }
 
   .info {
-    padding: 10px;
-
     p {
       font-weight: 500;
     }
@@ -244,12 +317,12 @@ aside {
     font-weight: 700;
     font-size: 10px;
 
-    margin: 10px;
+    margin: 1rem 0;
   }
 }
 
 .group {
-  margin: 10px;
+  margin: 1rem 0;
 
   .title {
     margin-left: 0;
@@ -262,12 +335,53 @@ aside {
     border: none;
 
     background-color: rgba(0, 0, 0, 0.25);
-    color: white;
+    color: inherit;
 
     cursor: pointer;
 
     padding: 5px 10px;
     margin: 10px 0;
   }
+}
+
+.highlight {
+  position: absolute;
+
+  left: calc(var(--x, 0) * 1px);
+  top: calc(var(--y, 0) * 1px);
+
+  width: calc(var(--size, 0) * 1px);
+  height: calc(var(--size, 0) * 1px);
+
+  z-index: 10;
+
+  pointer-events: none;
+
+  &-inner {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: calc(((var(--size, 0) * var(--highlight-size, 5)) * 1px));
+  }
+
+  &.right {
+    .highlight-inner {
+      right: 0;
+      left: auto;
+    }
+  }
+
+  &.bottom {
+    .highlight-inner {
+      bottom: 0;
+      top: auto;
+    }
+  }
+}
+
+.current {
+  max-width: 200px;
 }
 </style>

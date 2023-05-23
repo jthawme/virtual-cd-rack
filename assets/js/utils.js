@@ -117,9 +117,12 @@ export const throttle = (cb, time = 1000) => {
   };
 };
 
-export const loadImage = src => {
+export const loadImage = (src, anonymous = false) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    if (anonymous) {
+      img.setAttribute("crossorigin", "anonymous");
+    }
     img.onload = () => resolve(img);
     img.onerror = () => reject();
     img.src = src;

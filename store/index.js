@@ -1,7 +1,8 @@
 export const state = () => {
   return {
     endpoint: "",
-    domain: ""
+    domain: "",
+    albums: []
   };
 };
 
@@ -14,6 +15,9 @@ export const mutations = {
   },
   setRecaptchaKey(state, val) {
     state.recaptchaKey = val;
+  },
+  setAlbums(state, val) {
+    state.albums = val.slice();
   }
 };
 
@@ -39,7 +43,7 @@ export const getters = {
 };
 
 export const actions = {
-  async nuxtServerInit({ commit }, { env }) {
+  async nuxtServerInit({ commit, getters }, { env }) {
     commit("setEndpoint", env.endpoint);
     commit("setDomain", env.PROJECT_DOMAIN);
     commit("setRecaptchaKey", env.recaptcha);
