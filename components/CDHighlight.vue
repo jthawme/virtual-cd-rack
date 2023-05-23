@@ -42,11 +42,7 @@ export default {
       type: [Object, Boolean],
       default: null
     },
-    images: {
-      type: [Object, Boolean],
-      default: null
-    },
-    mbid: {
+    id: {
       type: String,
       required: true
     },
@@ -62,7 +58,7 @@ export default {
   },
   computed: {
     artistsString() {
-      return this.artists.map(({ title }) => title).join(", ");
+      return this.artists.join(", ");
     },
     style() {
       return {
@@ -76,16 +72,14 @@ export default {
         return false;
       }
 
-      return (
-        this.images?.small || Object.values(this.artwork.thumbnails).shift()
-      );
+      return this.artwork.small;
     },
     image() {
       if (!this.artwork) {
         return false;
       }
 
-      return this.images?.large || this.artwork.src;
+      return this.artwork.large;
     }
   }
 };

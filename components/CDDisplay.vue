@@ -118,8 +118,7 @@ export default {
             ctx.save();
             ctx.translate(x * this.tileSize, y * this.tileSize);
             ctx.fillStyle =
-              this.cds[y * this.perRow + x].data.color?.vibrant ||
-              this.defaultColor;
+              this.cds[y * this.perRow + x].color?.vibrant || this.defaultColor;
             ctx.fillRect(0, 0, roundedSize, roundedSize);
             ctx.restore();
           }

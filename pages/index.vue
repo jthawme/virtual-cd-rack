@@ -6,15 +6,15 @@
     <aside>
       <div class="left">
         <span v-if="currentAlbum" class="title">{{
-          todayActive === currentAlbum.data.mbid ? "Today" : "Highlight"
+          todayActive === currentAlbum.id ? "Today" : "Highlight"
         }}</span>
         <div
           v-if="currentAlbum"
-          :key="currentAlbum.data.mbid"
+          :key="currentAlbum.id"
           class="current"
           :style="`--size: 30`"
         >
-          <CDHighlight v-bind="currentAlbum.data" />
+          <CDHighlight v-bind="currentAlbum" />
         </div>
       </div>
 
@@ -74,20 +74,11 @@
         "
       >
         <CDHighlight
-          :key="highlightedAlbum.data.mbid"
-          v-bind="highlightedAlbum.data"
+          :key="highlightedAlbum.id"
+          v-bind="highlightedAlbum"
           class="highlight-inner"
         />
       </div>
-
-      <!-- <CD
-        v-for="album in filteredAlbums"
-        :key="album.barcode"
-        class="pool-item"
-        :class="{ 'pool-item-highlighted': album.data.mbid === highlight }"
-        v-bind="album.data"
-        :highlight="album.data.mbid === highlight"
-      /> -->
     </div>
   </div>
 </template>
@@ -112,10 +103,6 @@ export default {
       .load()
       .then(resp => resp.json());
 
-    albums.sort((a, b) =>
-      (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
-    );
-
     this.$store.commit("setAlbums", albums);
   },
   data() {
@@ -137,9 +124,7 @@ export default {
   },
   computed: {
     currentAlbum() {
-      return (
-        this.active && this.albums.find(item => item.data.mbid === this.active)
-      );
+      return this.active && this.albums.find(item => item.id === this.active);
     },
     albums() {
       return this.$store.state.albums;
@@ -147,13 +132,13 @@ export default {
     filteredAlbums() {
       if (this.currentFilter) {
         const albums = search(this.currentFilter, this.albums, {
-          keySelector: obj => obj.data.title,
+          keySelector: obj => obj.title,
           threshold: 0.8
         });
 
         const artists = search(this.currentFilter, this.albums, {
           keySelector: obj => {
-            return obj.data.artists.map(artist => artist.title).join(" ");
+            return obj.artists.join(" ");
           },
           threshold: 0.9
         });
@@ -200,11 +185,9 @@ export default {
       this.width = width;
     },
     onRandom() {
-      const mbid = randomArr(this.filteredAlbums).data.mbid;
+      const mbid = randomArr(this.filteredAlbums).id;
 
-      this.highlight = this.filteredAlbums.findIndex(
-        item => item.data.mbid === mbid
-      );
+      this.highlight = this.filteredAlbums.findIndex(item => item.id === mbid);
 
       this.onActiveClick();
     },
@@ -220,7 +203,7 @@ export default {
         return;
       }
 
-      this.active = this.filteredAlbums[this.highlight].data.mbid;
+      this.active = this.filteredAlbums[this.highlight].id;
     }
   }
 };

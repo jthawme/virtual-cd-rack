@@ -169,10 +169,27 @@ const addRelease = wrap(async (event, context, callback) => {
 const loadAlbums = wrap(async (event, context, callback) => {
   const albums = await scanTable(TABLE.MAIN, true);
 
+  albums.sort((a, b) =>
+    (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
+  );
+
   return {
     statusCode: 200,
     body: {
-      albums
+      albums: albums.map(album => ({
+        id: album.data.mbid,
+        artists: album.data.artists.map(({ title }) => title),
+        title: album.data.title,
+        color: album.data.color,
+        artwork: album.data.artwork
+          ? {
+              small:
+                album.data.images?.small ||
+                Object.values(album.data.artwork.thumbnails).shift(),
+              large: album.data.images?.large || album.data.artwork.src
+            }
+          : null
+      }))
     }
   };
 });
