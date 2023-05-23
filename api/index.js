@@ -169,27 +169,54 @@ const addRelease = wrap(async (event, context, callback) => {
 const loadAlbums = wrap(async (event, context, callback) => {
   const albums = await scanTable(TABLE.MAIN, true);
 
-  albums.sort((a, b) =>
-    (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
+  const sorted = Object.entries(
+    albums.reduce((p, c) => {
+      const artist = c.data.artists[0].title;
+
+      if (!p[artist]) {
+        p[artist] = [];
+      }
+
+      p[artist].push(c);
+
+      return p;
+    }, {})
   );
+
+  sorted.sort((a, b) => a[0].localeCompare(b[0]));
+  // albums.sort((a, b) =>
+  //   (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
+  // );
 
   return {
     statusCode: 200,
     body: {
-      albums: albums.map(album => ({
-        id: album.data.mbid,
-        artists: album.data.artists.map(({ title }) => title),
-        title: album.data.title,
-        color: album.data.color,
-        artwork: album.data.artwork
-          ? {
-              small:
-                album.data.images?.small ||
-                Object.values(album.data.artwork.thumbnails).shift(),
-              large: album.data.images?.large || album.data.artwork.src
-            }
-          : null
-      }))
+      albums: sorted
+        .flatMap(([artist, albums]) => {
+          const _albums = albums.slice();
+          // _albums.sort((a, b) => a.data.title.localeCompare(b.data.title));
+          _albums.sort(
+            (a, b) =>
+              parseInt((a.date || "0").split("-").shift()) -
+              parseInt((b.date || "0").split("-").shift())
+          );
+          return _albums;
+        })
+        .map(album => ({
+          id: album.data.mbid,
+          date: (album.date || "0").split("-").shift(),
+          artists: album.data.artists.map(({ title }) => title),
+          title: album.data.title,
+          color: album.data.color,
+          artwork: album.data.artwork
+            ? {
+                small:
+                  album.data.images?.small ||
+                  Object.values(album.data.artwork.thumbnails).shift(),
+                large: album.data.images?.large || album.data.artwork.src
+              }
+            : null
+        }))
     }
   };
 });

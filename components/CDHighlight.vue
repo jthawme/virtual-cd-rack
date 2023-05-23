@@ -12,7 +12,7 @@
 
     <div class="info">
       <div class="trim">
-        <span>{{ title }}</span>
+        <span>({{ date }}) {{ title }}</span>
       </div>
       <div class="trim">
         <span>{{ artistsString }}</span>
@@ -47,6 +47,10 @@ export default {
       required: true
     },
     title: {
+      type: String,
+      required: true
+    },
+    date: {
       type: String,
       required: true
     }

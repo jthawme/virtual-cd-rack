@@ -3,6 +3,42 @@
     <header>
       <h1>CD RACK</h1>
     </header>
+
+    <div
+      ref="canvas"
+      v-resize="onResize"
+      class="pool"
+      :style="
+        `--tile-size: ${tileInfo.size};  --highlight-size: ${highlightSize}`
+      "
+      @click="onActiveClick"
+    >
+      <CDDisplay
+        :width="width"
+        :cds="filteredAlbums"
+        @index="onIndex"
+        @info="onTileInfo"
+      />
+
+      <div
+        v-if="highlightedAlbum"
+        class="highlight"
+        :class="{
+          right: highlightPosition.right,
+          bottom: highlightPosition.bottom
+        }"
+        :style="
+          `--x:${highlightPosition.x}; --y:${highlightPosition.y};--size:${highlightPosition.size};`
+        "
+      >
+        <CDHighlight
+          :key="highlightedAlbum.id"
+          v-bind="highlightedAlbum"
+          class="highlight-inner"
+        />
+      </div>
+    </div>
+
     <aside>
       <div class="left">
         <span v-if="currentAlbum" class="title">{{
@@ -41,45 +77,10 @@
         <div class="group">
           <span class="title">Random selection</span>
           <button @click="onRandom">Random</button>
-          <button @click="highlight = null">Clear</button>
+          <!-- <button @click="highlight = null">Clear</button> -->
         </div>
       </div>
     </aside>
-
-    <div
-      ref="canvas"
-      v-resize="onResize"
-      class="pool"
-      :style="
-        `--tile-size: ${tileInfo.size};  --highlight-size: ${highlightSize}`
-      "
-      @click="onActiveClick"
-    >
-      <CDDisplay
-        :width="width"
-        :cds="filteredAlbums"
-        @index="onIndex"
-        @info="onTileInfo"
-      />
-
-      <div
-        v-if="highlightedAlbum"
-        class="highlight"
-        :class="{
-          right: highlightPosition.right,
-          bottom: highlightPosition.bottom
-        }"
-        :style="
-          `--x:${highlightPosition.x}; --y:${highlightPosition.y};--size:${highlightPosition.size};`
-        "
-      >
-        <CDHighlight
-          :key="highlightedAlbum.id"
-          v-bind="highlightedAlbum"
-          class="highlight-inner"
-        />
-      </div>
-    </div>
   </div>
 </template>
 
@@ -164,7 +165,8 @@ export default {
         right: col + this.highlightSize > this.tileInfo.perRow,
         bottom:
           row + (this.highlightSize + 2) >
-          Math.ceil(this.filteredAlbums.length / this.tileInfo.perRow)
+            Math.ceil(this.filteredAlbums.length / this.tileInfo.perRow) &&
+          row > this.highlightSize
       };
     },
 
@@ -235,7 +237,7 @@ header {
 .pool {
   position: relative;
 
-  min-height: calc((var(--tile-size) * (var(--highlight-size) + 2)) * 1px);
+  // min-height: calc((var(--tile-size) * (var(--highlight-size) + 2)) * 1px);
 }
 
 .search {
@@ -281,12 +283,25 @@ aside {
   color: #111;
 
   @include large-mobile {
-    grid-template-columns: minmax(auto, 200px) 1fr auto;
+    grid-template-columns: 1fr 1fr;
+
+    align-items: center;
   }
 
-  .right {
+  .left {
     @include large-mobile {
-      grid-column: 3;
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+      justify-content: center;
+
+      padding: 3rem 0;
+
+      .current {
+        width: 100%;
+      }
     }
   }
 
