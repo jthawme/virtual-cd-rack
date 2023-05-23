@@ -50,7 +50,7 @@ export default {
     dimensions: {
       immediate: true,
       handler({ width, height }) {
-        if (width && height) {
+        if (width) {
           this.resize(width, height);
         }
       }
@@ -68,7 +68,7 @@ export default {
       })
     ];
 
-    if (this.dimensions.width && this.dimensions.height) {
+    if (this.dimensions.width) {
       this.resize(this.dimensions.width, this.dimensions.height);
     }
   },
