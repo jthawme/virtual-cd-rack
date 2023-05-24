@@ -231,6 +231,8 @@ header {
     margin: -0.6em 0 0;
 
     opacity: 0.25;
+
+    white-space: nowrap;
   }
 }
 
