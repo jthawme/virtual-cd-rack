@@ -183,7 +183,12 @@ const loadAlbums = wrap(async (event, context, callback) => {
     }, {})
   );
 
-  sorted.sort((a, b) => a[0].localeCompare(b[0]));
+  sorted.sort((a, b) =>
+    a[0]
+      .toLocaleLowerCase()
+      .replace("the ", "")
+      .localeCompare(b[0].toLocaleLowerCase().replace("the ", ""))
+  );
   // albums.sort((a, b) =>
   //   (a.sortName || a.data.title).localeCompare(b.sortName || b.data.title)
   // );
