@@ -47,5 +47,7 @@ export const actions = {
     commit("setEndpoint", env.endpoint);
     commit("setDomain", env.PROJECT_DOMAIN);
     commit("setRecaptchaKey", env.recaptcha);
+    const { albums } = await getters.load().then(resp => resp.json());
+    commit("setAlbums", albums);
   }
 };

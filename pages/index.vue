@@ -99,13 +99,6 @@ const dateStr = () => {
 
 export default {
   components: { CDDisplay, CDHighlight },
-  async fetch() {
-    const { albums } = await this.$store.getters
-      .load()
-      .then(resp => resp.json());
-
-    this.$store.commit("setAlbums", albums);
-  },
   data() {
     return {
       width: -1,
